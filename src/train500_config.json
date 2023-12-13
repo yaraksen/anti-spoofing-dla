@@ -1,0 +1,149 @@
+{
+    "name": "DeepSpeech2_Base_RNN_BN",
+    "n_gpu": 1,
+    "preprocessing": {
+      "sr": 16000,
+      "spectrogram": {
+        "type": "MelSpectrogram",
+        "args": {
+          "n_mels": 128,
+          "normalized": true
+        }
+      },
+      "log_spec": true
+    },
+    "arch": {
+      "type": "DeepSpeech2",
+      "args": {
+        "n_feats": 128,
+        "hidden_size": 700,
+        "num_rnn_layers": 5,
+        "rnn_type": "GRU",
+        "use_batch_norm": true,
+        "large": false
+      }
+    },
+    "lr_scheduler": {
+      "type": "CosineAnnealingLR",
+      "args": {
+        "T_max": 23220
+      }
+    },
+    "trainer": {
+      "epochs": 180,
+      "len_epoch": 258,
+      "grad_norm_clip": 10,
+      "grad_acc_steps": 2,
+      "monitor": "min val_loss",
+      "early_stop": 500,
+      "save_dir": "saved/",
+      "save_period": 5,
+      "log_parameters": false,
+      "verbosity": 2,
+      "visualize": "wandb",
+      "wandb_entity": "yaraksen",
+      "wandb_project": "asr2"
+    },
+    "data": {
+      "train": {
+        "batch_size": 64,
+        "num_workers": 4,
+        "datasets": [
+          {
+            "type": "LibrispeechDataset",
+            "args": {
+              "part": "train-other-500",
+              "max_audio_length": 20.0,
+              "max_text_length": 400,
+              "data_dir": "data/datasets/librispeech"
+            },
+            "module": "hw_asr.datasets"
+          }
+        ]
+      },
+      "val": {
+        "batch_size": 64,
+        "num_workers": 4,
+        "datasets": [
+          {
+            "type": "LibrispeechDataset",
+            "args": {
+              "part": "dev-clean",
+              "data_dir": "data/datasets/librispeech"
+            }
+          }
+        ]
+      },
+      "test-clean": {
+        "batch_size": 64,
+        "num_workers": 4,
+        "datasets": [
+          {
+            "type": "LibrispeechDataset",
+            "args": {
+              "part": "test-clean",
+              "data_dir": "data/datasets/librispeech"
+            }
+          }
+        ]
+      },
+      "test-other": {
+        "batch_size": 64,
+        "num_workers": 4,
+        "datasets": [
+          {
+            "type": "LibrispeechDataset",
+            "args": {
+              "part": "test-other",
+              "data_dir": "data/datasets/librispeech"
+            }
+          }
+        ]
+      }
+    },
+    "augmentations": {
+      "wave": [
+        {
+          "type": "Gain",
+          "args": {
+            "min_gain_in_db": -2.0,
+            "max_gain_in_db": 15.0,
+            "p": 0.5
+          }
+        },
+        {
+          "type": "PolarityInversion",
+          "args": {
+            "p": 0.5
+          }
+        }
+      ],
+      "spectrogram": []
+    },
+    "optimizer": {
+      "type": "AdamW",
+      "args": {
+        "lr": 1e-4,
+        "weight_decay": 0.0005
+      }
+    },
+    "loss": {
+      "type": "CTCLoss",
+      "args": {}
+    },
+    "metrics": [
+      {
+        "type": "ArgmaxWERMetric",
+        "args": {
+          "name": "WER (argmax)"
+        }
+      },
+      {
+        "type": "ArgmaxCERMetric",
+        "args": {
+          "name": "CER (argmax)"
+        }
+      }
+    ]
+  }
+  
