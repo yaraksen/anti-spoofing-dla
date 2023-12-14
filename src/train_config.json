@@ -1,26 +1,12 @@
 {
-    "name": "DeepSpeech2_Base_RNN_BN",
+    "name": "RawNet2",
     "n_gpu": 1,
-    "preprocessing": {
-      "sr": 16000,
-      "spectrogram": {
-        "type": "MelSpectrogram",
-        "args": {
-          "n_mels": 128,
-          "normalized": true
-        }
-      },
-      "log_spec": true
-    },
     "arch": {
-      "type": "DeepSpeech2",
+      "type": "RawNet2",
       "args": {
-        "n_feats": 128,
-        "hidden_size": 700,
-        "num_rnn_layers": 5,
-        "rnn_type": "GRU",
-        "use_batch_norm": true,
-        "large": false
+        "sinc_out_channels": 20,
+        "sinc_filter_length": 1024,
+        "sinc_abs": true
       }
     },
     "lr_scheduler": {
