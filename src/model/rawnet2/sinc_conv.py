@@ -178,7 +178,7 @@ class SincFilters(nn.Module):
         sinc_type,
         **kwargs,
     ):
-        super(self).__init__()
+        super().__init__()
         self.conv = SincConv_fast(
             in_channels=1,
             out_channels=sinc_out_channels,

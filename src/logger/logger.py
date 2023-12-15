@@ -10,7 +10,7 @@ def setup_logging(save_dir, log_config=None, default_level=logging.INFO):
     Setup logging configuration
     """
     if log_config is None:
-        log_config = str(ROOT_PATH / "hw_asr" / "logger" / "logger_config.json")
+        log_config = str(ROOT_PATH / "src" / "logger" / "logger_config.json")
     log_config = Path(log_config)
     if log_config.is_file():
         config = read_json(log_config)

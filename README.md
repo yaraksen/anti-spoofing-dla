@@ -25,14 +25,14 @@ pip install -r ./requirements.txt
 #### Training step 1:
    ```shell
    python train.py \
-      -c hw_asr/train460_config.json \
+      -c src/train460_config.json \
       -wk "YOUR_WANDB_API_KEY"
    ```
 
 #### Training step 2:
    ```shell
    python train.py \
-      -c hw_asr/train500_config.json \
+      -c src/train500_config.json \
       -wk "YOUR_WANDB_API_KEY" \
       -p "PATH TO THE LATEST CHECKPOINT FROM TRAIN 1"
    ```

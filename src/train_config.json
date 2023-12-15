@@ -19,17 +19,17 @@
       }
     },
     "lr_scheduler": {
-      "type": "CosineAnnealingLR",
+      "type": "ExponentialLR",
       "args": {
-        "T_max": 23220
+        "gamma": 1.0
       }
     },
     "trainer": {
-      "epochs": 180,
-      "len_epoch": 258,
+      "epochs": 3,
+      "len_epoch": 100,
       "log_step": 50,
       "grad_norm_clip": 10,
-      "monitor": "min val_loss",
+      "monitor": "min dev_loss",
       "early_stop": 500,
       "save_dir": "saved/",
       "save_period": 5,
@@ -37,47 +37,44 @@
       "verbosity": 2,
       "visualize": "wandb",
       "wandb_entity": "yaraksen",
-      "wandb_project": "asr2"
+      "wandb_project": "anti_spoofing_proj"
     },
     "data": {
       "train": {
-        "batch_size": 64,
+        "batch_size": 32,
         "num_workers": 4,
         "datasets": [
           {
-            "type": "LibrispeechDataset",
+            "type": "ASVSpoofDataset",
             "args": {
-              "part": "train-other-500",
-              "max_audio_length": 20.0,
-              "max_text_length": 400,
-              "data_dir": "data/datasets/librispeech"
-            },
-            "module": "hw_asr.datasets"
+              "data_path": "data/LA/ASVspoof2019_LA_train",
+              "protocol_path": "data/LA/ASVspoof2019_LA_cm_protocols/ASVspoof2019.LA.cm.train.trn.txt"
+            }
           }
         ]
       },
       "dev": {
-        "batch_size": 64,
+        "batch_size": 32,
         "num_workers": 4,
         "datasets": [
           {
-            "type": "LibrispeechDataset",
+            "type": "ASVSpoofDataset",
             "args": {
-              "part": "dev-clean",
-              "data_dir": "data/datasets/librispeech"
+              "data_path": "data/LA/ASVspoof2019_LA_dev",
+              "protocol_path": "data/LA/ASVspoof2019_LA_cm_protocols/ASVspoof2019.LA.cm.dev.trl.txt"
             }
           }
         ]
       },
       "eval": {
-        "batch_size": 64,
+        "batch_size": 32,
         "num_workers": 4,
         "datasets": [
           {
-            "type": "LibrispeechDataset",
+            "type": "ASVSpoofDataset",
             "args": {
-              "part": "test-clean",
-              "data_dir": "data/datasets/librispeech"
+              "data_path": "data/LA/ASVspoof2019_LA_eval",
+              "protocol_path": "data/LA/ASVspoof2019_LA_cm_protocols/ASVspoof2019.LA.cm.eval.trl.txt"
             }
           }
         ]
@@ -86,25 +83,21 @@
     "optimizer": {
       "type": "AdamW",
       "args": {
-        "lr": 1e-4,
-        "weight_decay": 0.0005
+        "lr": 0.0001,
+        "weight_decay": 0.0001
       }
     },
     "loss": {
-      "type": "CTCLoss",
-      "args": {}
+      "type": "CrossEntropyLoss",
+      "args": {
+        "weight": [1.0, 9.0]
+      }
     },
     "metrics": [
       {
-        "type": "ArgmaxWERMetric",
+        "type": "EERMetric",
         "args": {
-          "name": "WER (argmax)"
-        }
-      },
-      {
-        "type": "ArgmaxCERMetric",
-        "args": {
-          "name": "CER (argmax)"
+          "name": "EER"
         }
       }
     ]

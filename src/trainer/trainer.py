@@ -11,9 +11,7 @@ from torchvision.transforms import ToTensor
 from tqdm import tqdm
 
 from src.base import BaseTrainer
-from src.base.base_text_encoder import BaseTextEncoder
 from src.logger.utils import plot_spectrogram_to_buf
-from src.metric.utils import calc_cer, calc_wer
 from src.utils import inf_loop, MetricTracker
 
 
@@ -32,7 +30,6 @@ class Trainer(BaseTrainer):
         config,
         device,
         dataloaders,
-        text_encoder,
         lr_scheduler=None,
         len_epoch=None,
         skip_oom=True,
@@ -41,7 +38,6 @@ class Trainer(BaseTrainer):
             model, criterion, metrics, optimizer, scheduler, config, device
         )
         self.skip_oom = skip_oom
-        self.text_encoder = text_encoder
         self.config = config
         self.train_dataloader = dataloaders["train"]
         if len_epoch is None:

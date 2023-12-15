@@ -4,7 +4,7 @@ import torch.nn.functional as F
 
 class FMSBlock(nn.Module):
     def __init__(self, num_channels, **kwargs):
-        super(self).__init__()
+        super().__init__()
         self.fc = nn.Linear(num_channels, num_channels)
 
     def forward(self, x):
@@ -18,7 +18,7 @@ class FMSBlock(nn.Module):
 
 class ResBlock(nn.Module):
     def __init__(self, in_channels, out_channels, **kwargs):
-        super(self).__init__()
+        super().__init__()
 
         if in_channels != out_channels:
             self.residual_conv1x1 = nn.Conv1d(

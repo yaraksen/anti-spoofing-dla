@@ -1,6 +1,4 @@
-# from hw_asr.metric.cer_metric import ArgmaxCERMetric
+from src.metric.EERMetric import EERMetric
 
 
-__all__ = [
-    # "ArgmaxCERMetric"
-]
+__all__ = ["EERMetric"]

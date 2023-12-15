@@ -15,7 +15,7 @@ class RawNet2(nn.Module):
         gru_num_layers: int,
         **kwargs
     ):
-        super(self).__init__()
+        super(RawNet2, self).__init__()
         assert kwargs["sinc_out_channels"] == small_resblock_kernel_size
 
         self.sinc_filter = SincFilters(**kwargs)

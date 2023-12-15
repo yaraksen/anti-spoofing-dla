@@ -3,7 +3,6 @@ from abc import abstractmethod
 import torch
 from numpy import inf
 
-from src.base import BaseModel
 from src.logger import get_visualizer
 
 
@@ -12,9 +11,7 @@ class BaseTrainer:
     Base class for all trainers
     """
 
-    def __init__(
-        self, model: BaseModel, criterion, metrics, optimizer, scheduler, config, device
-    ):
+    def __init__(self, model, criterion, metrics, optimizer, scheduler, config, device):
         self.device = device
         self.config = config
         self.logger = config.get_logger("trainer", config["trainer"]["verbosity"])
