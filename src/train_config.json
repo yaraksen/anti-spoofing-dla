@@ -4,9 +4,18 @@
     "arch": {
       "type": "RawNet2",
       "args": {
+        "sinc_type": "s1",
+        "norm_before_gru": true,
+        "gru_hidden": 1024,
+        "gru_num_layers": 3,
         "sinc_out_channels": 20,
         "sinc_filter_length": 1024,
-        "sinc_abs": true
+        "sinc_abs": true,
+        "sinc_requires_grad": false,
+        "min_low_hz": 50,
+        "min_band_hz": 50,
+        "small_resblock_kernel_size": 20,
+        "large_resblock_kernel_size": 128
       }
     },
     "lr_scheduler": {
@@ -18,8 +27,8 @@
     "trainer": {
       "epochs": 180,
       "len_epoch": 258,
+      "log_step": 50,
       "grad_norm_clip": 10,
-      "grad_acc_steps": 2,
       "monitor": "min val_loss",
       "early_stop": 500,
       "save_dir": "saved/",
@@ -47,7 +56,7 @@
           }
         ]
       },
-      "val": {
+      "dev": {
         "batch_size": 64,
         "num_workers": 4,
         "datasets": [
@@ -60,7 +69,7 @@
           }
         ]
       },
-      "test-clean": {
+      "eval": {
         "batch_size": 64,
         "num_workers": 4,
         "datasets": [
@@ -72,39 +81,7 @@
             }
           }
         ]
-      },
-      "test-other": {
-        "batch_size": 64,
-        "num_workers": 4,
-        "datasets": [
-          {
-            "type": "LibrispeechDataset",
-            "args": {
-              "part": "test-other",
-              "data_dir": "data/datasets/librispeech"
-            }
-          }
-        ]
       }
-    },
-    "augmentations": {
-      "wave": [
-        {
-          "type": "Gain",
-          "args": {
-            "min_gain_in_db": -2.0,
-            "max_gain_in_db": 15.0,
-            "p": 0.5
-          }
-        },
-        {
-          "type": "PolarityInversion",
-          "args": {
-            "p": 0.5
-          }
-        }
-      ],
-      "spectrogram": []
     },
     "optimizer": {
       "type": "AdamW",

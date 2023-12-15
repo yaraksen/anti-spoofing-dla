@@ -15,7 +15,9 @@ from src.utils import read_json, write_json, ROOT_PATH
 
 
 class ConfigParser:
-    def __init__(self, config, resume=None, modification=None, run_id=None, pretrained=None):
+    def __init__(
+        self, config, resume=None, modification=None, run_id=None, pretrained=None
+    ):
         """
         class to parse configuration json file. Handles hyperparameters for training,
         initializations of modules, checkpoint saving and logging module.
@@ -74,8 +76,10 @@ class ConfigParser:
             pretrained = Path(args.pretrained)
             cfg_fname = pretrained.parent / "config.json"
         else:
-            msg_no_cfg = "Configuration file need to be specified. " \
-                         "Add '-c config.json', for example."
+            msg_no_cfg = (
+                "Configuration file need to be specified. "
+                "Add '-c config.json', for example."
+            )
             assert args.config is not None, msg_no_cfg
             resume = None
             cfg_fname = Path(args.config)
@@ -84,8 +88,8 @@ class ConfigParser:
         if args.config and resume:
             # update new config for fine-tuning
             config.update(read_json(args.config))
-        
-        config.update({'wandb_key': args.wandb_key})
+
+        config.update({"wandb_key": args.wandb_key})
 
         # parse custom cli options into dictionary
         modification = {
@@ -149,8 +153,9 @@ class ConfigParser:
             if "text_encoder" not in self._config:
                 self._text_encoder = CTCCharTextEncoder()
             else:
-                self._text_encoder = self.init_obj(self["text_encoder"],
-                                                   default_module=text_encoder_module)
+                self._text_encoder = self.init_obj(
+                    self["text_encoder"], default_module=text_encoder_module
+                )
         return self._text_encoder
 
     # setting read-only attributes

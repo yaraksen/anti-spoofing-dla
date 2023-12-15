@@ -39,6 +39,7 @@ class SincConv_fast(nn.Module):
         self,
         out_channels,
         kernel_size,
+        sinc_type: str,
         sample_rate=16000,
         in_channels=1,
         stride=1,
@@ -81,13 +82,18 @@ class SincConv_fast(nn.Module):
         self.min_band_hz = min_band_hz
 
         # initialize filterbanks such that they are equally spaced in Mel scale
-        low_hz = 0 # TODO: maybe 30
+        low_hz = 30  # maybe 0
         high_hz = self.sample_rate / 2 - (self.min_low_hz + self.min_band_hz)
 
-        mel = np.linspace(
-            self.to_mel(low_hz), self.to_mel(high_hz), self.out_channels + 1
-        )
-        hz = self.to_hz(mel)
+        if sinc_type == "s1":
+            mel = np.linspace(
+                self.to_mel(low_hz), self.to_mel(high_hz), self.out_channels + 1
+            )
+            hz = self.to_hz(mel)
+        elif sinc_type == "s3":
+            hz = np.linspace(low_hz, high_hz, self.out_channels + 1)
+        else:
+            raise NotImplementedError(f"Sinc type {sinc_type} is not supported")
 
         # filter lower frequency (out_channels, 1)
         self.low_hz_ = nn.Parameter(torch.Tensor(hz[:-1]).view(-1, 1))
@@ -169,7 +175,8 @@ class SincFilters(nn.Module):
         min_band_hz,
         sinc_abs,
         sinc_requires_grad,
-        **kwargs
+        sinc_type,
+        **kwargs,
     ):
         super(self).__init__()
         self.conv = SincConv_fast(
@@ -177,18 +184,22 @@ class SincFilters(nn.Module):
             out_channels=sinc_out_channels,
             kernel_size=sinc_filter_length,
             min_band_hz=min_band_hz,
-            min_low_hz=min_low_hz
+            min_low_hz=min_low_hz,
+            sinc_type=sinc_type,
         )
         self.pool = nn.MaxPool1d(3)
         self.norm = nn.BatchNorm1d(sinc_out_channels)
         self.relu = nn.LeakyReLU(0.3)
         self.sinc_abs = sinc_abs
-        if sinc_requires_grad:
+        if not sinc_requires_grad:
             self.freeze_weights()
-    
+
     def freeze_weights(self):
+        num = 0
         for p in self.parameters():
+            num += p.numel()
             p.requires_grad = False
+        print(f"Freezed {num} parameters in Sinc Filters")
 
     def forward(self, x, **batch):
         x = self.conv(x)

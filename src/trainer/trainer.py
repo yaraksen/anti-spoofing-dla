@@ -23,25 +23,26 @@ class Trainer(BaseTrainer):
     """
 
     def __init__(
-            self,
-            model,
-            criterion,
-            metrics,
-            optimizer,
-            scheduler,
-            config,
-            device,
-            dataloaders,
-            text_encoder,
-            lr_scheduler=None,
-            len_epoch=None,
-            skip_oom=True,
+        self,
+        model,
+        criterion,
+        metrics,
+        optimizer,
+        scheduler,
+        config,
+        device,
+        dataloaders,
+        text_encoder,
+        lr_scheduler=None,
+        len_epoch=None,
+        skip_oom=True,
     ):
-        super().__init__(model, criterion, metrics, optimizer, scheduler, config, device)
+        super().__init__(
+            model, criterion, metrics, optimizer, scheduler, config, device
+        )
         self.skip_oom = skip_oom
         self.text_encoder = text_encoder
         self.config = config
-        self.grad_acc_steps = config["trainer"].get("grad_acc_steps", 1)
         self.train_dataloader = dataloaders["train"]
         if len_epoch is None:
             # epoch-based training
@@ -50,16 +51,15 @@ class Trainer(BaseTrainer):
             # iteration-based training
             self.train_dataloader = inf_loop(self.train_dataloader)
             self.len_epoch = len_epoch
-        self.evaluation_dataloaders = {k: v for k, v in dataloaders.items() if k != "train"}
+        self.evaluation_dataloaders = {
+            k: v for k, v in dataloaders.items() if k != "train"
+        }
         self.lr_scheduler = lr_scheduler
 
-        self.log_step = (self.len_epoch // self.grad_acc_steps) if self.grad_acc_steps > 1 else 50
-        assert self.len_epoch % self.grad_acc_steps == 0, f"{self.len_epoch} % {self.grad_acc_steps} != 0. I was lazy, so it should be like that to work correctly"
-        assert (self.len_epoch // self.grad_acc_steps) % self.log_step == 0, f"{self.len_epoch // self.grad_acc_steps} % {self.log_step} != 0"
+        self.log_step = config["trainer"].get("log_step", 50)
 
-        print('self.log_step:', self.log_step)
-        print('self.len_epoch:', self.len_epoch)
-        print('self.grad_acc_steps:', self.grad_acc_steps)
+        print("self.log_step:", self.log_step)
+        print("self.len_epoch:", self.len_epoch)
 
         self.train_metrics = MetricTracker(
             "loss", "grad norm", *[m.name for m in self.metrics], writer=self.writer
@@ -71,9 +71,9 @@ class Trainer(BaseTrainer):
     @staticmethod
     def move_batch_to_device(batch, device: torch.device):
         """
-        Move all necessary tensors to the HPU
+        Move all necessary tensors to the GPU
         """
-        for tensor_for_gpu in ["spectrogram", "text_encoded"]:
+        for tensor_for_gpu in ["audio"]:
             batch[tensor_for_gpu] = batch[tensor_for_gpu].to(device)
         return batch
 
@@ -93,24 +93,14 @@ class Trainer(BaseTrainer):
         self.model.train()
         self.train_metrics.reset()
         self.writer.add_scalar("epoch", epoch)
-
-        global_epoch_step = 0 # for grad accum
         self.optimizer.zero_grad()
 
         for batch_idx, batch in enumerate(
-                tqdm(self.train_dataloader, desc="train", total=self.len_epoch - 1)
+            tqdm(self.train_dataloader, desc="train", total=self.len_epoch - 1)
         ):
-            do_opt_step = ((batch_idx + 1) % self.grad_acc_steps == 0)
-            if do_opt_step:
-                # print(batch_idx, "РАБОТАЕМ")
-                global_epoch_step += 1
-            
             try:
                 batch = self.process_batch(
-                    batch,
-                    is_train=True,
-                    metrics=self.train_metrics,
-                    do_opt_step=do_opt_step
+                    batch, is_train=True, metrics=self.train_metrics
                 )
             except RuntimeError as e:
                 if "out of memory" in str(e) and self.skip_oom:
@@ -122,8 +112,9 @@ class Trainer(BaseTrainer):
                     continue
                 else:
                     raise e
-            
-            if do_opt_step and global_epoch_step % self.log_step == 0:
+
+            global_step = self.len_epoch * epoch + batch_idx
+            if global_step % self.log_step == 0:
                 self.writer.set_step((epoch - 1) * self.len_epoch + batch_idx)
                 self.logger.debug(
                     "Train Epoch: {} {} Loss: {:.6f}".format(
@@ -131,10 +122,8 @@ class Trainer(BaseTrainer):
                     )
                 )
                 self.writer.add_scalar(
-                    "learning rate", self.lr_scheduler.get_last_lr()[0]
+                    "learning rate", self.lr_scheduler.param_groups[0]["lr"]
                 )
-                self._log_predictions(**batch)
-                self._log_spectrogram(batch["spectrogram"])
                 self._log_audio(batch["audio"])
                 self._log_scalars(self.train_metrics)
                 # we don't want to reset train metrics at the start of every epoch
@@ -152,38 +141,31 @@ class Trainer(BaseTrainer):
 
         return log
 
-    def process_batch(self, batch, is_train: bool, metrics: MetricTracker, do_opt_step: bool):
+    def process_batch(self, batch, is_train: bool, metrics: MetricTracker):
         batch = self.move_batch_to_device(batch, self.device)
-        # if is_train and do_opt_step:
-        #    self.optimizer.zero_grad()
+        if is_train:
+            self.optimizer.zero_grad()
+
         outputs = self.model(**batch)
         if type(outputs) is dict:
             batch.update(outputs)
         else:
             batch["logits"] = outputs
-
-        batch["log_probs"] = F.log_softmax(batch["logits"], dim=-1)
-        batch["log_probs_length"] = self.model.transform_input_lengths(
-            batch["spectrogram_length"]
-        )
         batch["loss"] = self.criterion(**batch)
+
         if is_train:
-            batch["loss"] = batch["loss"] / self.grad_acc_steps
             batch["loss"].backward()
 
-            if do_opt_step:
-                self._clip_grad_norm()
-                self.optimizer.step()
+            self._clip_grad_norm()
+            self.optimizer.step()
 
-                self.train_metrics.update("grad norm", self.get_grad_norm())
-                self.optimizer.zero_grad()
-                if self.lr_scheduler is not None:
-                    self.lr_scheduler.step()
-            
-            batch["loss"] = batch["loss"] * self.grad_acc_steps
-        
+            self.train_metrics.update("grad norm", self.get_grad_norm())
+            self.optimizer.zero_grad()
+            if self.lr_scheduler is not None:
+                self.lr_scheduler.step()
+
         metrics.update("loss", batch["loss"].item())
-    
+
         for met in self.metrics:
             metrics.update(met.name, met(**batch))
         return batch
@@ -199,20 +181,15 @@ class Trainer(BaseTrainer):
         self.evaluation_metrics.reset()
         with torch.no_grad():
             for batch_idx, batch in tqdm(
-                    enumerate(dataloader),
-                    desc=part,
-                    total=len(dataloader),
+                enumerate(dataloader),
+                desc=part,
+                total=len(dataloader),
             ):
                 batch = self.process_batch(
-                    batch,
-                    is_train=False,
-                    metrics=self.evaluation_metrics,
-                    do_opt_step=False
+                    batch, is_train=False, metrics=self.evaluation_metrics
                 )
             self.writer.set_step(epoch * self.len_epoch, part)
             self._log_scalars(self.evaluation_metrics)
-            self._log_predictions(**batch)
-            self._log_spectrogram(batch["spectrogram"])
 
         # add histogram of model parameters to the tensorboard
         if self.config["trainer"].get("log_parameters", False):
@@ -230,48 +207,6 @@ class Trainer(BaseTrainer):
             total = self.len_epoch
         return base.format(current, total, 100.0 * current / total)
 
-    def _log_predictions(
-            self,
-            text,
-            log_probs,
-            log_probs_length,
-            audio_path,
-            examples_to_log=10,
-            *args,
-            **kwargs,
-    ):
-        # TODO: implement logging of beam search results
-        if self.writer is None:
-            return
-        argmax_inds = log_probs.cpu().argmax(-1).numpy()
-        argmax_inds = [
-            inds[: int(ind_len)]
-            for inds, ind_len in zip(argmax_inds, log_probs_length.numpy())
-        ]
-        argmax_texts_raw = [self.text_encoder.decode(inds) for inds in argmax_inds]
-        argmax_texts = [self.text_encoder.ctc_decode(inds) for inds in argmax_inds]
-        tuples = list(zip(argmax_texts, text, argmax_texts_raw, audio_path))
-        shuffle(tuples)
-        rows = {}
-        for pred, target, raw_pred, audio_path in tuples[:examples_to_log]:
-            target = BaseTextEncoder.normalize_text(target)
-            wer = calc_wer(target, pred) * 100
-            cer = calc_cer(target, pred) * 100
-
-            rows[Path(audio_path).name] = {
-                "target": target,
-                "raw prediction": raw_pred,
-                "predictions": pred,
-                "wer": wer,
-                "cer": cer,
-            }
-        self.writer.add_table("predictions", pd.DataFrame.from_dict(rows, orient="index"))
-
-    def _log_spectrogram(self, spectrogram_batch):
-        spectrogram = random.choice(spectrogram_batch.cpu())
-        image = PIL.Image.open(plot_spectrogram_to_buf(spectrogram))
-        self.writer.add_image("spectrogram", ToTensor()(image))
-    
     def _log_audio(self, audio_batch):
         audio = random.choice(audio_batch.cpu())
         self.writer.add_audio("audio", audio, sample_rate=16000)

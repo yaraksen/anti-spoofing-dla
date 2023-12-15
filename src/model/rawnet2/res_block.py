@@ -1,26 +1,57 @@
 from torch import nn
-import torch
-import numpy as np
 import torch.nn.functional as F
+
+
+class FMSBlock(nn.Module):
+    def __init__(self, num_channels, **kwargs):
+        super(self).__init__()
+        self.fc = nn.Linear(num_channels, num_channels)
+
+    def forward(self, x):
+        scales = F.adaptive_avg_pool1d(x, 1)
+        B, N = x.shape[:2]
+        scales = scales.view(B, -1)
+        scales = F.sigmoid(self.fc(scales))
+        scales = scales.view(B, N, -1)
+        return x * scales + scales
+
 
 class ResBlock(nn.Module):
     def __init__(self, in_channels, out_channels, **kwargs):
         super(self).__init__()
-        self.conv1x1_before = nn.Conv1d(in_channels, out_channels, 1, bias=False)
-        self.conv1x1_after = nn.Conv1d(out_channels, out_channels, 1, bias=False)
-        if in_channels != out_channels:
-            self.residual_conv = nn.Conv1d(in_channels, out_channels, 1, bias=False)
 
-        self.act_norm = nn.Sequential(nn.PReLU(), nn.BatchNorm1d(out_channels))
-        self.prelu = nn.PReLU()
-        self.bn = nn.BatchNorm1d(out_channels)
+        if in_channels != out_channels:
+            self.residual_conv1x1 = nn.Conv1d(
+                in_channels=in_channels, out_channels=out_channels, kernel_size=1
+            )
+        else:
+            self.residual_conv1x1 = nn.Identity()
+
+        self.convs = nn.Sequential(
+            nn.BatchNorm1d(in_channels),
+            nn.LeakyReLU(0.3),
+            nn.Conv1d(
+                in_channels=in_channels,
+                out_channels=out_channels,
+                kernel_size=3,
+                padding=1,
+            ),
+            nn.BatchNorm1d(out_channels),
+            nn.LeakyReLU(0.3),
+            nn.Conv1d(
+                in_channels=out_channels,
+                out_channels=out_channels,
+                kernel_size=3,
+                padding=1,
+            ),
+        )
+
         self.maxpool = nn.MaxPool1d(3)
+        self.fms = FMSBlock(out_channels)
 
     def forward(self, x):
-        out = self.act_norm(self.conv1x1_before(x))
-        out = self.bn(self.conv1x1_after(out))
-        if hasattr(self, "residual_conv"):
-            x = self.residual_conv(x)
-        out = self.prelu(out + x)
-        out = self.maxpool(out)
-        return out
+        residual = self.residual_conv1x1(x)
+        x = self.convs(x)
+        x = self.maxpool(x + residual)
+        x = self.fms(x)
+        return x

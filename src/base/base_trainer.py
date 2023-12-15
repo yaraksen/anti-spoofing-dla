@@ -12,7 +12,9 @@ class BaseTrainer:
     Base class for all trainers
     """
 
-    def __init__(self, model: BaseModel, criterion, metrics, optimizer, scheduler, config, device):
+    def __init__(
+        self, model: BaseModel, criterion, metrics, optimizer, scheduler, config, device
+    ):
         self.device = device
         self.config = config
         self.logger = config.get_logger("trainer", config["trainer"]["verbosity"])
@@ -49,9 +51,7 @@ class BaseTrainer:
         self.checkpoint_dir = config.save_dir
 
         # setup visualization writer instance
-        self.writer = get_visualizer(
-            config, self.logger, cfg_trainer["visualize"]
-        )
+        self.writer = get_visualizer(config, self.logger, cfg_trainer["visualize"])
 
         if config.resume is not None:
             self._resume_checkpoint(config.resume)
@@ -136,7 +136,6 @@ class BaseTrainer:
                 artifact_tag = "best" if best else "ckpt"
                 self.writer.add_ckpt(f'{self.config["name"]}_{artifact_tag}', ckpt_path)
 
-
     def _save_checkpoint(self, epoch, save_best=False, only_best=False):
         """
         Saving checkpoints
@@ -187,8 +186,8 @@ class BaseTrainer:
 
         # load optimizer state from checkpoint only when optimizer type is not changed.
         if (
-                checkpoint["config"]["optimizer"] != self.config["optimizer"] or
-                checkpoint["config"]["lr_scheduler"] != self.config["lr_scheduler"]
+            checkpoint["config"]["optimizer"] != self.config["optimizer"]
+            or checkpoint["config"]["lr_scheduler"] != self.config["lr_scheduler"]
         ):
             self.logger.warning(
                 "Warning: Optimizer or lr_scheduler given in config file is different "
@@ -201,7 +200,7 @@ class BaseTrainer:
         self.logger.info(
             "Checkpoint loaded. Resume training from epoch {}".format(self.start_epoch)
         )
-    
+
     def _from_pretrained(self, pretrained_path):
         """
         Train from pretrained models
@@ -221,5 +220,7 @@ class BaseTrainer:
         self.model.load_state_dict(checkpoint["state_dict"])
 
         self.logger.info(
-            "Pretrained model loaded. Starting training from epoch {}".format(self.start_epoch)
+            "Pretrained model loaded. Starting training from epoch {}".format(
+                self.start_epoch
+            )
         )
