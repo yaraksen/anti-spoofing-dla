@@ -1,0 +1,10 @@
+Spoof probability for test_audios/generated_2.flac: 0.9601964
+Spoof probability for test_audios/bonafide_joke.flac: 0.7409458
+Spoof probability for test_audios/audio_2.flac: 0.9999797
+Spoof probability for test_audios/generated_1.flac: 0.9999770
+Spoof probability for test_audios/audio_3.flac: 0.9999846
+Spoof probability for test_audios/audio_1.flac: 0.9999782
+Spoof probability for test_audios/Kanye_West_it_was_a_Jewish_doctor.flac: 0.9999863
+Spoof probability for test_audios/LJ037-0171.flac: 0.9999818
+Spoof probability for test_audios/generated_3.flac: 0.9999545
+Spoof probability for test_audios/LJ025-0076.flac: 0.9999756

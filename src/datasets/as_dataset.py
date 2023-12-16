@@ -33,10 +33,10 @@ class ASVSpoofDataset(Dataset):
     def __getitem__(self, idx):
         flac, _ = torchaudio.load(self.file_paths[idx])
         max_len = 64000
-        if flac.shape[0] < max_len:
+        if flac.shape[1] < max_len:
             # flac = F.pad(
-            #     flac.unsqueeze(0), (0, max_len - flac.shape[0]), mode="circular"
-            # ).squeeze(0)
+            #     flac.unsqueeze(0), (0, max_len - flac.shape[1]), mode="circular"
+            # ).squeeze(0) # Does not allow more than one circle
             repeat_value = max_len // flac.shape[1] + 1
             flac = flac.repeat(1, repeat_value)[:, :max_len]
         else:

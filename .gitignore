@@ -111,4 +111,4 @@ wandb/
 .idea/
 __MACOSX/
 
-final_model/model_best.pth
+final_model/*

@@ -53,6 +53,7 @@ class RawNet2(nn.Module):
         x = self.resblocks(x)
         x = self.gru(self.bn_act_gru(x).transpose(1, 2))[0][:, -1]
         x = self.fc1(x)
+        # cosine similarity with class embedding
         x = x / (0.1 * torch.norm(x, p=2, dim=1, keepdim=True))
         x = self.fc2(x)
         return x
