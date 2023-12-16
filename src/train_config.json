@@ -1,5 +1,5 @@
 {
-    "name": "RawNet2_all_hints",
+    "name": "RawNet2_hz_non_zero",
     "n_gpu": 1,
     "arch": {
       "type": "RawNet2",
@@ -12,10 +12,23 @@
         "sinc_filter_length": 1024,
         "sinc_abs": true,
         "sinc_requires_grad": false,
-        "min_low_hz": 0,
-        "min_band_hz": 0,
+        "min_low_hz": 50,
+        "min_band_hz": 50,
         "small_resblock_kernel_size": 20,
         "large_resblock_kernel_size": 128
+      }
+    },
+    "optimizer": {
+      "type": "AdamW",
+      "args": {
+        "lr": 0.0001,
+        "weight_decay": 0.0001
+      }
+    },
+    "loss": {
+      "type": "CrossEntropyLoss",
+      "args": {
+        "weight": [1.0, 9.0]
       }
     },
     "lr_scheduler": {
@@ -78,19 +91,6 @@
             }
           }
         ]
-      }
-    },
-    "optimizer": {
-      "type": "AdamW",
-      "args": {
-        "lr": 0.0001,
-        "weight_decay": 0.0001
-      }
-    },
-    "loss": {
-      "type": "CrossEntropyLoss",
-      "args": {
-        "weight": [1.0, 9.0]
       }
     },
     "metrics": [
