@@ -1,5 +1,5 @@
 {
-    "name": "RawNet2_hz_non_zero",
+    "name": "RawNet2_no_abs",
     "n_gpu": 1,
     "arch": {
       "type": "RawNet2",
@@ -10,10 +10,10 @@
         "gru_num_layers": 3,
         "sinc_out_channels": 20,
         "sinc_filter_length": 1024,
-        "sinc_abs": true,
+        "sinc_abs": false,
         "sinc_requires_grad": false,
-        "min_low_hz": 50,
-        "min_band_hz": 50,
+        "min_low_hz": 0,
+        "min_band_hz": 0,
         "small_resblock_kernel_size": 20,
         "large_resblock_kernel_size": 128
       }
