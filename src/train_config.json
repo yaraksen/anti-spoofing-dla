@@ -1,5 +1,5 @@
 {
-    "name": "RawNet2_best",
+    "name": "RawNet2_all_hints",
     "n_gpu": 1,
     "arch": {
       "type": "RawNet2",
@@ -12,8 +12,8 @@
         "sinc_filter_length": 1024,
         "sinc_abs": true,
         "sinc_requires_grad": false,
-        "min_low_hz": 50,
-        "min_band_hz": 50,
+        "min_low_hz": 0,
+        "min_band_hz": 0,
         "small_resblock_kernel_size": 20,
         "large_resblock_kernel_size": 128
       }
@@ -26,7 +26,7 @@
     },
     "trainer": {
       "epochs": 100,
-      "len_epoch": 1700,
+      "len_epoch": 1000,
       "log_step": 100,
       "grad_norm_clip": 10,
       "monitor": "min dev_loss",
