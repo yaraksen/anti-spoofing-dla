@@ -47,8 +47,8 @@
           {
             "type": "ASVSpoofDataset",
             "args": {
-              "data_path": "data/LA/ASVspoof2019_LA_train",
-              "protocol_path": "data/LA/ASVspoof2019_LA_cm_protocols/ASVspoof2019.LA.cm.train.trn.txt"
+              "data_path": "/kaggle/input/asvpoof-2019-dataset/LA/LA/ASVspoof2019_LA_train",
+              "protocol_path": "/kaggle/input/asvpoof-2019-dataset/LA/LA/ASVspoof2019_LA_cm_protocols/ASVspoof2019.LA.cm.train.trn.txt"
             }
           }
         ]
@@ -60,8 +60,8 @@
           {
             "type": "ASVSpoofDataset",
             "args": {
-              "data_path": "data/LA/ASVspoof2019_LA_dev",
-              "protocol_path": "data/LA/ASVspoof2019_LA_cm_protocols/ASVspoof2019.LA.cm.dev.trl.txt"
+              "data_path": "/kaggle/input/asvpoof-2019-dataset/LA/LA/ASVspoof2019_LA_dev",
+              "protocol_path": "/kaggle/input/asvpoof-2019-dataset/LA/LA/ASVspoof2019_LA_cm_protocols/ASVspoof2019.LA.cm.dev.trl.txt"
             }
           }
         ]
@@ -73,8 +73,8 @@
           {
             "type": "ASVSpoofDataset",
             "args": {
-              "data_path": "data/LA/ASVspoof2019_LA_eval",
-              "protocol_path": "data/LA/ASVspoof2019_LA_cm_protocols/ASVspoof2019.LA.cm.eval.trl.txt"
+              "data_path": "/kaggle/input/asvpoof-2019-dataset/LA/LA/ASVspoof2019_LA_eval",
+              "protocol_path": "/kaggle/input/asvpoof-2019-dataset/LA/LA/ASVspoof2019_LA_cm_protocols/ASVspoof2019.LA.cm.eval.trl.txt"
             }
           }
         ]
