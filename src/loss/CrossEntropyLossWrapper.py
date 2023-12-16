@@ -5,7 +5,7 @@ from typing import List
 
 
 class CrossEntropyLossWrapper(CrossEntropyLoss):
-    def __init__(self, weight: List):
+    def __init__(self, weight: List = None):
         if weight is not None:
             super().__init__(weight=torch.tensor(weight))
         else:
