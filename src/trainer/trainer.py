@@ -69,7 +69,7 @@ class Trainer(BaseTrainer):
         """
         Move all necessary tensors to the GPU
         """
-        for tensor_for_gpu in ["audio"]:
+        for tensor_for_gpu in ["audio", "target"]:
             batch[tensor_for_gpu] = batch[tensor_for_gpu].to(device)
         return batch
 
@@ -118,7 +118,7 @@ class Trainer(BaseTrainer):
                     )
                 )
                 self.writer.add_scalar(
-                    "learning rate", self.lr_scheduler.param_groups[0]["lr"]
+                    "learning rate", self.optimizer.param_groups[0]["lr"]
                 )
                 self._log_audio(batch["audio"])
                 self._log_scalars(self.train_metrics)
@@ -162,8 +162,8 @@ class Trainer(BaseTrainer):
 
         metrics.update("loss", batch["loss"].item())
 
-        for met in self.metrics:
-            metrics.update(met.name, met(**batch))
+        # for met in self.metrics:
+        #     metrics.update(met.name, met(**batch))
         return batch
 
     def _evaluation_epoch(self, epoch, part, dataloader):
@@ -175,6 +175,8 @@ class Trainer(BaseTrainer):
         """
         self.model.eval()
         self.evaluation_metrics.reset()
+        logits, targets = [], []
+
         with torch.no_grad():
             for batch_idx, batch in tqdm(
                 enumerate(dataloader),
@@ -184,13 +186,16 @@ class Trainer(BaseTrainer):
                 batch = self.process_batch(
                     batch, is_train=False, metrics=self.evaluation_metrics
                 )
+                targets.append(batch["target"])
+                logits.append(batch["logits"])
             self.writer.set_step(epoch * self.len_epoch, part)
-            self._log_scalars(self.evaluation_metrics)
+            # self._log_scalars(self.evaluation_metrics)
 
-        # add histogram of model parameters to the tensorboard
-        if self.config["trainer"].get("log_parameters", False):
-            for name, p in self.model.named_parameters():
-                self.writer.add_histogram(name, p, bins="auto")
+        for met in self.metrics:
+            self.evaluation_metrics.update(
+                met.name, met(logits=torch.cat(logits), target=torch.cat(targets))
+            )
+        self._log_scalars(self.evaluation_metrics)
         return self.evaluation_metrics.result()
 
     def _progress(self, batch_idx):

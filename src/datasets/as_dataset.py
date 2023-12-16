@@ -5,14 +5,12 @@ import torchaudio
 from torch import randint
 from torch.utils.data import Dataset
 import torch.nn.functional as F
+import numpy as np
 
 
 class ASVSpoofDataset(Dataset):
-    def __init__(self, data_path: str, protocol_path: str):
+    def __init__(self, data_path: str, protocol_path: str, limit: int = None):
         self.data_path = Path(data_path) / "flac"
-
-        # flac_path = data_path / "flac"
-        # self.flac_files = list(flac_path.glob("**/*.flac"))
         self.file_paths = []
         self.targets = []
 
@@ -24,25 +22,23 @@ class ASVSpoofDataset(Dataset):
                 self.file_paths.append(self.data_path / f"{file_id}.flac")
                 self.targets.append(int(target == "bonafide"))
 
+        if limit is not None:
+            perm = np.random.permutation(len(self.file_paths))[:limit]
+            self.file_paths = np.array(self.file_paths)[perm]
+            self.targets = np.array(self.targets)[perm]
+
     def __len__(self):
         return len(self.file_paths)
 
     def __getitem__(self, idx):
         flac, _ = torchaudio.load(self.file_paths[idx])
-
-        assert flac.dim() == 2, f"{flac.dim()} is not 2"
-
         max_len = 64000
         if flac.shape[0] < max_len:
             # flac = F.pad(
             #     flac.unsqueeze(0), (0, max_len - flac.shape[0]), mode="circular"
             # ).squeeze(0)
-            # TODO: use different padding method
-            pass
+            repeat_value = max_len // flac.shape[1] + 1
+            flac = flac.repeat(1, repeat_value)[:, :max_len]
         else:
             flac = flac[:, :max_len]
-
-        assert flac.dim == 2
-        assert flac.shape[0] == max_len
-
         return {"audio": flac, "target": self.targets[idx]}

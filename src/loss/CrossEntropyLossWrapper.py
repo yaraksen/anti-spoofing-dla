@@ -10,3 +10,6 @@ class CrossEntropyLossWrapper(CrossEntropyLoss):
             super().__init__(weight=torch.tensor(weight))
         else:
             super().__init__()
+
+    def forward(self, logits, target, **batch):
+        return super().forward(logits, target)

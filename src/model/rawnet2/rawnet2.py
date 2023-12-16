@@ -3,6 +3,7 @@ import torch
 from typing import List
 from src.model.rawnet2.sinc_conv import SincFilters
 from src.model.rawnet2.res_block import ResBlock
+import numpy as np
 
 
 class RawNet2(nn.Module):
@@ -55,3 +56,11 @@ class RawNet2(nn.Module):
         x = x / (0.1 * torch.norm(x, p=2, dim=1, keepdim=True))
         x = self.fc2(x)
         return x
+    
+    def __str__(self):
+        """
+        Model prints with number of trainable parameters
+        """
+        model_parameters = filter(lambda p: p.requires_grad, self.parameters())
+        params = sum([np.prod(p.size()) for p in model_parameters])
+        return super().__str__() + "\nTrainable parameters: {}".format(params)
