@@ -1,5 +1,5 @@
 {
-    "name": "RawNet2_no_wd",
+    "name": "RawNet2_no_weight_CE",
     "n_gpu": 1,
     "arch": {
       "type": "RawNet2",
@@ -22,14 +22,12 @@
       "type": "AdamW",
       "args": {
         "lr": 0.0001,
-        "weight_decay": 0.0
+        "weight_decay": 0.0001
       }
     },
     "loss": {
       "type": "CrossEntropyLoss",
-      "args": {
-        "weight": [1.0, 9.0]
-      }
+      "args": {}
     },
     "lr_scheduler": {
       "type": "ExponentialLR",
