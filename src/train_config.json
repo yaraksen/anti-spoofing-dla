@@ -1,5 +1,5 @@
 {
-    "name": "RawNet2_no_weight_CE",
+    "name": "RawNet2_big_sinc",
     "n_gpu": 1,
     "arch": {
       "type": "RawNet2",
@@ -8,14 +8,14 @@
         "norm_before_gru": true,
         "gru_hidden": 1024,
         "gru_num_layers": 3,
-        "sinc_out_channels": 20,
-        "sinc_filter_length": 1024,
+        "sinc_out_channels": 128,
+        "sinc_filter_length": 3,
         "sinc_abs": true,
         "sinc_requires_grad": false,
         "min_low_hz": 0,
         "min_band_hz": 0,
-        "small_resblock_kernel_size": 20,
-        "large_resblock_kernel_size": 128
+        "small_resblock_kernel_size": 128,
+        "large_resblock_kernel_size": 512
       }
     },
     "optimizer": {
