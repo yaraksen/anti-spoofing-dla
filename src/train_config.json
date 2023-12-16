@@ -1,5 +1,5 @@
 {
-    "name": "RawNet2_big_sinc",
+    "name": "RawNet2_no_abs_hz_nonzero_sinc_grad",
     "n_gpu": 1,
     "arch": {
       "type": "RawNet2",
@@ -8,14 +8,14 @@
         "norm_before_gru": true,
         "gru_hidden": 1024,
         "gru_num_layers": 3,
-        "sinc_out_channels": 128,
-        "sinc_filter_length": 3,
-        "sinc_abs": true,
-        "sinc_requires_grad": false,
-        "min_low_hz": 0,
-        "min_band_hz": 0,
-        "small_resblock_kernel_size": 128,
-        "large_resblock_kernel_size": 512
+        "sinc_out_channels": 20,
+        "sinc_filter_length": 1024,
+        "sinc_abs": false,
+        "sinc_requires_grad": true,
+        "min_low_hz": 50,
+        "min_band_hz": 50,
+        "small_resblock_kernel_size": 20,
+        "large_resblock_kernel_size": 128
       }
     },
     "optimizer": {
@@ -60,8 +60,8 @@
           {
             "type": "ASVSpoofDataset",
             "args": {
-              "data_path": "/kaggle/input/asvpoof-2019-dataset/LA/LA/ASVspoof2019_LA_train",
-              "protocol_path": "/kaggle/input/asvpoof-2019-dataset/LA/LA/ASVspoof2019_LA_cm_protocols/ASVspoof2019.LA.cm.train.trn.txt"
+              "data_path": "data/LA/ASVspoof2019_LA_train",
+              "protocol_path": "data/LA/ASVspoof2019_LA_cm_protocols/ASVspoof2019.LA.cm.train.trn.txt"
             }
           }
         ]
@@ -73,8 +73,8 @@
           {
             "type": "ASVSpoofDataset",
             "args": {
-              "data_path": "/kaggle/input/asvpoof-2019-dataset/LA/LA/ASVspoof2019_LA_eval",
-              "protocol_path": "/kaggle/input/asvpoof-2019-dataset/LA/LA/ASVspoof2019_LA_cm_protocols/ASVspoof2019.LA.cm.eval.trl.txt"
+              "data_path": "data/LA/ASVspoof2019_LA_eval",
+              "protocol_path": "data/LA/ASVspoof2019_LA_cm_protocols/ASVspoof2019.LA.cm.eval.trl.txt"
             }
           }
         ]
