@@ -66,19 +66,6 @@
           }
         ]
       },
-      "dev": {
-        "batch_size": 32,
-        "num_workers": 4,
-        "datasets": [
-          {
-            "type": "ASVSpoofDataset",
-            "args": {
-              "data_path": "/kaggle/input/asvpoof-2019-dataset/LA/LA/ASVspoof2019_LA_dev",
-              "protocol_path": "/kaggle/input/asvpoof-2019-dataset/LA/LA/ASVspoof2019_LA_cm_protocols/ASVspoof2019.LA.cm.dev.trl.txt"
-            }
-          }
-        ]
-      },
       "eval": {
         "batch_size": 32,
         "num_workers": 4,
