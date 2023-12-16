@@ -23,7 +23,7 @@ class RawNet2(nn.Module):
         self.resblocks = nn.Sequential(
             # small resblocks
             ResBlock(small_resblock_kernel_size, small_resblock_kernel_size),
-            ResBlock(small_resblock_kernel_size, small_resblock_kernel_size),
+            ResBlock(small_resblock_kernel_size, small_resblock_kernel_size), # так то здесь num_channels
             # large resblocks
             ResBlock(small_resblock_kernel_size, large_resblock_kernel_size),
             ResBlock(large_resblock_kernel_size, large_resblock_kernel_size),
