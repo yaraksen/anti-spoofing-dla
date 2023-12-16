@@ -1,17 +1,17 @@
 {
-    "name": "RawNet2_no_norm_before_gru_layer_1",
+    "name": "RawNet2_sinc_with_grad",
     "n_gpu": 1,
     "arch": {
       "type": "RawNet2",
       "args": {
         "sinc_type": "s1",
-        "norm_before_gru": false,
+        "norm_before_gru": true,
         "gru_hidden": 1024,
-        "gru_num_layers": 1,
+        "gru_num_layers": 3,
         "sinc_out_channels": 20,
         "sinc_filter_length": 1024,
         "sinc_abs": true,
-        "sinc_requires_grad": false,
+        "sinc_requires_grad": true,
         "min_low_hz": 0,
         "min_band_hz": 0,
         "small_resblock_kernel_size": 20,
